@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PJPK Champions - Misi Juara Sekolah</title>
+<style>
+:root{
+  --night:#0a1330; --night2:#14214f; --panel:#18276044; --edge:#2d4aa8;
+  --cyan:#22d3ee; --gold:#ffd43b; --pink:#ff4d7d; --green:#22c55e; --red:#ef4444;
+  --text:#f1f5ff; --muted:#a9b8e6; --track:#d9480f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:"Trebuchet MS","Segoe UI",Verdana,Arial,sans-serif;
+  background:radial-gradient(circle at 50% -10%,#2a3d9a 0,#0a1330 55%) fixed;
+  color:var(--text);font-size:18px;line-height:1.45;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);
+}
+#app{max-width:720px;margin:0 auto;padding:14px 14px 40px}
+.screen{display:none}
+.screen.active{display:block}
+h1,h2,h3{margin:0;line-height:1.15}
+.title{font-size:clamp(34px,9vw,54px);font-weight:900;letter-spacing:1px;color:var(--gold);text-shadow:0 0 18px #ffd43b88,0 3px 0 #b45309}
+.subtitle{font-size:clamp(18px,4.6vw,24px);font-weight:800;color:var(--cyan);margin-top:6px}
+.card{background:linear-gradient(180deg,#1b2b6e,#121d4d);border:2px solid var(--edge);border-radius:18px;padding:18px;box-shadow:0 10px 30px #0008}
+.center{text-align:center}
+label{display:block;font-weight:800;margin:14px 0 6px}
+input[type=text]{width:100%;font-size:20px;padding:14px;border-radius:12px;border:3px solid #3b5bdb;background:#0b1538;color:var(--text);outline:none}
+input[type=text]:focus{border-color:var(--cyan);box-shadow:0 0 0 4px #22d3ee44}
+.btn{
+  display:block;width:100%;min-height:58px;font:inherit;font-size:20px;font-weight:900;
+  border:0;border-radius:14px;padding:14px 18px;cursor:pointer;color:#1a1200;
+  background:linear-gradient(180deg,#ffe066,#fcc419);box-shadow:0 5px 0 #b8860b;margin-top:14px;
+}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #b8860b}
+.btn:focus-visible,.opt:focus-visible,.snd:focus-visible{outline:4px solid var(--cyan);outline-offset:2px}
+.btn.alt{background:linear-gradient(180deg,#7ee8fa,#22d3ee);box-shadow:0 5px 0 #0e7490;color:#032a33}
+.btn.alt:active{box-shadow:0 2px 0 #0e7490}
+.btn.ghost{background:#2b3f8f;color:var(--text);box-shadow:0 5px 0 #17245c}
+.err{color:#ffb4b4;font-weight:700;min-height:24px;margin-top:8px}
+.rules{list-style:none;padding:0;margin:14px 0 0;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:16px}
+.rules li{background:#0b153866;border-radius:10px;padding:8px 10px}
+.snd{position:fixed;top:calc(10px + env(safe-area-inset-top,0));right:10px;z-index:30;width:52px;height:52px;border-radius:50%;border:3px solid var(--edge);background:#14214f;color:#fff;font-size:24px;cursor:pointer}
+
+/* HUD */
+.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;padding-right:0}
+.hud div{background:#0b1538aa;border:2px solid var(--edge);border-radius:12px;padding:6px 8px;text-align:center;font-weight:800;font-size:15px}
+.hud b{display:block;font-size:22px;color:var(--gold)}
+.hud .lives b{letter-spacing:2px;font-size:20px}
+.timer{height:16px;background:#0b1538;border-radius:99px;border:2px solid var(--edge);overflow:hidden;margin:10px 0 4px}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--green),#a3e635);transition:width .1s linear}
+.timer.low i{background:linear-gradient(90deg,var(--red),#fb923c)}
+.tnum{text-align:right;font-weight:900;font-size:16px;color:var(--muted)}
+.tnum.low{color:#ff8a8a}
+.progress{height:8px;background:#0b1538;border-radius:99px;overflow:hidden;margin-bottom:10px}
+.progress i{display:block;height:100%;width:0;background:var(--cyan);transition:width .4s}
+
+/* Stadium */
+.stage{position:relative;border-radius:16px;overflow:hidden;border:2px solid var(--edge);margin-bottom:12px;background:#0b1538}
+.stage svg{display:block;width:100%;height:auto}
+#runner{transition:transform .9s ease}
+#bob.run{animation:bob .25s infinite alternate}
+#bob.trip{animation:trip .5s 1}
+#crowd.cheer{animation:cheer .35s 3}
+@keyframes bob{to{transform:translateY(-5px)}}
+@keyframes trip{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+@keyframes cheer{50%{transform:translateY(-4px)}}
+#cheer{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%) scale(.6);font-size:clamp(22px,6vw,34px);font-weight:900;color:#fff;text-shadow:0 3px 0 #000a,0 0 14px var(--gold);opacity:0;pointer-events:none;white-space:nowrap}
+#cheer.show{animation:pop 1.1s ease-out 1}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-30%) scale(.5)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-80%) scale(1)}}
+
+/* Question */
+.qmeta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-weight:800;font-size:15px;margin-bottom:8px}
+.qtext{font-size:clamp(19px,4.8vw,23px);font-weight:800;margin-bottom:12px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;font:inherit;font-size:18px;font-weight:700;color:var(--text);background:#0e1a47;border:3px solid #3552c4;border-radius:14px;padding:12px 14px;min-height:60px;cursor:pointer}
+.opt .ltr{flex:0 0 36px;height:36px;border-radius:50%;background:#3552c4;display:grid;place-items:center;font-weight:900}
+.opt:hover:not(:disabled){border-color:var(--cyan)}
+.opt:disabled{cursor:default}
+.opt.correct{background:#0f5a2c;border-color:var(--green)}
+.opt.correct .ltr{background:var(--green);color:#052e16}
+.opt.wrong{background:#6b1414;border-color:var(--red)}
+.opt.wrong .ltr{background:var(--red)}
+.opt.dim{opacity:.55}
+.fb{display:none;margin-top:14px;border-radius:14px;padding:14px;border:3px solid}
+.fb.show{display:block}
+.fb.ok{background:#0b3d20;border-color:var(--green)}
+.fb.no{background:#4a1111;border-color:var(--red)}
+.fb h3{font-size:22px;margin-bottom:6px}
+.fb p{margin:4px 0}
+
+/* Overlay + end */
+#arenaOv{position:fixed;inset:0;background:#050a1ccc;z-index:20;display:none;align-items:center;justify-content:center;padding:16px}
+#arenaOv.show{display:flex}
+#arenaOv .card{max-width:480px;width:100%;text-align:center;animation:rise .5s ease-out}
+@keyframes rise{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.bigmedal{font-size:84px;line-height:1;animation:spin 1s ease-out}
+@keyframes spin{from{transform:rotateY(360deg) scale(.3)}to{transform:none}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0;text-align:left}
+.stats div{background:#0b153877;border-radius:10px;padding:8px 12px;font-size:16px;color:var(--muted)}
+.stats b{display:block;color:var(--text);font-size:21px}
+.stats .wide{grid-column:1/-1}
+.rank{font-size:26px;font-weight:900;color:var(--gold);margin:6px 0}
+.go{color:#ff8a8a;font-size:clamp(36px,10vw,56px);font-weight:900;text-shadow:0 3px 0 #7f1d1d}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:40}
+.copied{color:var(--cyan);font-weight:800;min-height:24px;margin-top:8px;text-align:center}
+.mascotBox{display:flex;justify-content:center;gap:10px;align-items:flex-end;margin:6px 0}
+@media (max-width:420px){.rules{grid-template-columns:1fr}.opt{font-size:17px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- Maskot atlet (digunakan semula) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mascot" viewBox="0 0 100 120">
+    <rect x="36" y="88" width="11" height="24" rx="4" fill="#ffd6a5"/>
+    <rect x="53" y="88" width="11" height="24" rx="4" fill="#ffd6a5"/>
+    <ellipse cx="40" cy="114" rx="10" ry="5" fill="#ff4d7d"/>
+    <ellipse cx="60" cy="114" rx="10" ry="5" fill="#ff4d7d"/>
+    <rect x="32" y="80" width="36" height="15" rx="5" fill="#1d4ed8"/>
+    <ellipse cx="22" cy="68" rx="7" ry="13" fill="#ffd6a5"/>
+    <ellipse cx="78" cy="68" rx="7" ry="13" fill="#ffd6a5"/>
+    <rect x="30" y="52" width="40" height="36" rx="10" fill="#06b6d4"/>
+    <path d="M41 52 L50 70 L59 52" stroke="#ff4d7d" stroke-width="4" fill="none"/>
+    <circle cx="50" cy="73" r="6" fill="#ffd43b" stroke="#b8860b" stroke-width="2"/>
+    <circle cx="50" cy="32" r="22" fill="#ffd6a5"/>
+    <path d="M28 30 Q50 2 72 30 Q50 18 28 30Z" fill="#3b2314"/>
+    <rect x="28" y="24" width="44" height="7" rx="3" fill="#ff4d7d"/>
+    <circle cx="42" cy="37" r="3" fill="#222"/>
+    <circle cx="58" cy="37" r="3" fill="#222"/>
+    <path d="M42 45 Q50 52 58 45" stroke="#222" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  </symbol>
+</svg>
+
+<button class="snd" id="sndBtn" aria-label="Hidup atau matikan bunyi" title="Bunyi">🔊</button>
+<canvas id="confetti"></canvas>
+
+<div id="app">
+
+  <!-- SKRIN MULA -->
+  <section id="s-start" class="screen active">
+    <div class="center">
+      <div class="title">PJPK CHAMPIONS</div>
+      <div class="subtitle">Misi Juara Sekolah</div>
+      <div class="mascotBox">
+        <svg viewBox="0 0 100 120" width="130" height="156" aria-label="Maskot atlet"><use href="#mascot" width="100" height="120"/></svg>
+        <div style="font-size:84px;line-height:1" aria-hidden="true">🏆</div>
+      </div>
+    </div>
+    <div class="card">
+      <label for="nama">Nama murid</label>
+      <input type="text" id="nama" maxlength="40" autocomplete="off" placeholder="Taip nama penuh">
+      <label for="kelas">Kelas</label>
+      <input type="text" id="kelas" maxlength="20" autocomplete="off" placeholder="Contoh: 1 Bestari">
+      <div class="err" id="startErr" role="alert"></div>
+      <button class="btn" id="startBtn">MULA PERMAINAN</button>
+      <ul class="rules">
+        <li>🏟️ 6 arena, 30 soalan</li>
+        <li>❤️ 5 nyawa</li>
+        <li>⏱️ 30 saat setiap soalan</li>
+        <li>⭐ Betul +100 mata</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SKRIN PERMAINAN -->
+  <section id="s-game" class="screen">
+    <div class="hud">
+      <div>Soalan<b id="hQ">1/30</b></div>
+      <div>Skor<b id="hScore">0</b></div>
+      <div class="lives">Nyawa<b id="hLives">❤️❤️❤️❤️❤️</b></div>
+    </div>
+    <div class="progress" aria-hidden="true"><i id="progBar"></i></div>
+
+    <div class="stage">
+      <svg viewBox="0 0 400 130" role="img" aria-label="Stadium dengan atlet sedang berlari">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b1d4d"/><stop offset="1" stop-color="#3a1f7a"/></linearGradient>
+          <radialGradient id="glow"><stop offset="0" stop-color="#fff6a8" stop-opacity=".9"/><stop offset="1" stop-color="#fff6a8" stop-opacity="0"/></radialGradient>
+          <pattern id="chk" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#fff"/><rect width="4" height="4" fill="#111"/><rect x="4" y="4" width="4" height="4" fill="#111"/></pattern>
+        </defs>
+        <rect width="400" height="130" fill="url(#sky)"/>
+        <circle cx="28" cy="16" r="26" fill="url(#glow)"/><circle cx="372" cy="16" r="26" fill="url(#glow)"/>
+        <circle cx="28" cy="16" r="5" fill="#fff6a8"/><circle cx="372" cy="16" r="5" fill="#fff6a8"/>
+        <path d="M0 96 L0 42 Q200 6 400 42 L400 96Z" fill="#1c2a66"/>
+        <path d="M0 96 L0 62 Q200 30 400 62 L400 96Z" fill="#26398a"/>
+        <g id="crowd"></g>
+        <text id="arenaTxt" x="200" y="22" text-anchor="middle" fill="#ffd43b" font-size="11" font-weight="800" font-family="Trebuchet MS,Verdana,sans-serif"></text>
+        <rect y="96" width="400" height="34" fill="#d9480f"/>
+        <line x1="0" x2="400" y1="105" y2="105" stroke="#fff" stroke-opacity=".55" stroke-width="1"/>
+        <line x1="0" x2="400" y1="114" y2="114" stroke="#fff" stroke-opacity=".55" stroke-width="1"/>
+        <line x1="0" x2="400" y1="123" y2="123" stroke="#fff" stroke-opacity=".55" stroke-width="1"/>
+        <rect x="376" y="96" width="8" height="34" fill="url(#chk)"/>
+        <g id="runner" style="transform:translate(20px,0)"><g id="bob"><use href="#mascot" x="0" y="50" width="40" height="48"/></g></g>
+      </svg>
+      <div id="cheer" aria-live="polite"></div>
+    </div>
+
+    <div class="card">
+      <div class="timer" id="timerBox"><i id="timerBar"></i></div>
+      <div class="tnum" id="tNum">30 s</div>
+      <div class="qmeta"><span id="qArena"></span><span id="qNo"></span></div>
+      <div class="qtext" id="qText"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb" role="status" aria-live="polite">
+        <h3 id="fbTitle"></h3>
+        <p id="fbAns"></p>
+        <p id="fbExp"></p>
+        <button class="btn" id="nextBtn">TERUSKAN</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME OVER -->
+  <section id="s-over" class="screen">
+    <div class="card center">
+      <div class="go">GAME OVER</div>
+      <div style="font-size:64px" aria-hidden="true">😢</div>
+      <p>Nyawa sudah habis. Jangan putus asa, cuba lagi!</p>
+      <div class="stats" id="overStats"></div>
+      <button class="btn" id="retryBtn">CUBA LAGI</button>
+      <button class="btn alt" id="copyBtn2">SALIN KEPUTUSAN</button>
+      <div class="copied" id="copied2" role="status"></div>
+    </div>
+  </section>
+
+  <!-- TAMAT -->
+  <section id="s-end" class="screen">
+    <div class="card center">
+      <div class="title" style="font-size:clamp(28px,8vw,42px)">TAMAT PERMAINAN</div>
+      <div class="bigmedal" id="endMedal">🏆</div>
+      <div class="rank" id="endRank"></div>
+      <div class="stats" id="endStats"></div>
+      <button class="btn" id="againBtn">MAIN SEMULA</button>
+      <button class="btn alt" id="copyBtn">SALIN KEPUTUSAN</button>
+      <div class="copied" id="copied" role="status"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Overlay selesai arena -->
+<div id="arenaOv" role="dialog" aria-modal="true" aria-labelledby="ovTitle">
+  <div class="card">
+    <div class="bigmedal" id="ovMedal">🥇</div>
+    <h2 id="ovTitle" style="margin-top:8px;color:var(--gold)"></h2>
+    <p id="ovText"></p>
+    <button class="btn" id="ovBtn">ARENA SETERUSNYA</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===== BANK SOALAN (urutan tetap) ===== */
+var ARENAS = [
+  {n:"Gimnastik dan Pergerakan Berirama", i:"🤸"},
+  {n:"Permainan Kategori Serangan", i:"⚽"},
+  {n:"Permainan Kategori Jaring", i:"🏐"},
+  {n:"Olahraga, Rekreasi dan Kecergasan", i:"🏃"},
+  {n:"Pendidikan Kesihatan dan Keselamatan Diri", i:"🛡️"},
+  {n:"Pemakanan dan Pertolongan Cemas", i:"🍎"}
+];
+
+/* q = soalan, o = 4 pilihan, a = indeks jawapan betul (0-3) dalam o, h = huraian */
+var Q = [
+/* ARENA 1 */
+{q:"Apakah bentuk badan tuck semasa layangan di atas trampolin?",
+ o:["Kedua-dua lutut dibengkokkan dan dirapatkan ke dada","Kedua-dua kaki diluruskan dan dibuka luas","Badan dibaringkan di atas lantai","Tangan diletakkan di belakang badan"],a:0,
+ h:"Tuck melibatkan lutut dibengkokkan dan dibawa ke arah dada."},
+{q:"Bentuk badan pike merujuk kepada...",
+ o:["Badan melentik ke belakang","Kaki lurus dengan badan dibengkokkan pada pinggul","Lutut dibengkokkan ke dada","Kedua-dua tangan menyentuh lantai"],a:1,
+ h:"Pike mengekalkan kaki lurus sambil membengkokkan badan pada pinggul."},
+{q:"Bentuk badan straddle dilakukan dengan...",
+ o:["Merapatkan kedua-dua kaki","Membengkokkan kedua-dua lutut","Membuka kedua-dua kaki ke sisi","Melipat tangan di dada"],a:2,
+ h:"Straddle melibatkan kaki yang dibuka ke sisi."},
+{q:"Antara berikut, tarian tradisional yang dipelajari dalam pergerakan berirama Tingkatan 1 ialah...",
+ o:["Zapin dan Inang","Bharatanatyam dan Flamenco","Balet dan Hip-hop","Joget dan Sumazau"],a:3,
+ h:"Joget dan Sumazau ialah tarian yang terkandung dalam pembelajaran pergerakan berirama Tingkatan 1."},
+{q:"Mengapakah pergerakan tarian perlu diselaraskan dengan muzik?",
+ o:["Untuk menghasilkan pergerakan yang mengikut irama","Untuk mengelakkan kerjasama","Untuk memperlahankan semua gerakan","Untuk menghapuskan kreativiti"],a:0,
+ h:"Penyelarasan pergerakan dan muzik membantu menghasilkan persembahan yang teratur."},
+/* ARENA 2 */
+{q:"Apakah tujuan menggelecek bola dalam permainan bola sepak?",
+ o:["Menghentikan permainan","Mengawal bola sambil bergerak melepasi pihak lawan","Menggantikan penjaga gol","Mengeluarkan bola dari padang"],a:1,
+ h:"Mengelecek membolehkan pemain membawa bola dan mengatasi halangan."},
+{q:"Bahagian kaki yang lazim digunakan untuk membuat hantaran pendek yang tepat ialah...",
+ o:["Tumit","Lutut","Bahagian dalam kaki","Hujung jari kaki"],a:2,
+ h:"Bahagian dalam kaki memberikan permukaan sentuhan yang lebih luas untuk hantaran tepat."},
+{q:"Dalam permainan bola sepak, pemain manakah boleh menggunakan tangan untuk menangkap bola dalam kawasan penaltinya mengikut undang-undang permainan?",
+ o:["Penyerang","Pemain tengah","Pertahanan","Penjaga gol"],a:3,
+ h:"Penjaga gol dibenarkan menggunakan tangan dalam kawasan penaltinya tertakluk pada peraturan."},
+{q:"Apakah tujuan utama membuat hantaran dalam bola jaring?",
+ o:["Menggerakkan bola kepada rakan sepasukan","Menyepak bola ke gawang","Memukul bola dengan raket","Membaling bola ke luar gelanggang"],a:0,
+ h:"Hantaran membolehkan pasukan menggerakkan bola untuk membina serangan."},
+{q:"Apakah tindakan sesuai apabila rakan sepasukan berada dalam kedudukan lebih baik untuk menjaringkan gol?",
+ o:["Menyimpan bola selama mungkin","Membuat hantaran kepada rakan tersebut","Membuang bola ke luar","Menghalang pergerakan rakan"],a:1,
+ h:"Kerjasama dan pemilihan hantaran yang sesuai meningkatkan peluang menjaringkan gol."},
+/* ARENA 3 */
+{q:"Apakah kemahiran yang biasa digunakan untuk menerima servis rendah dalam bola tampar?",
+ o:["Rejaman","Mengadang","Menyangga","Melontar peluru"],a:2,
+ h:"Menyangga menggunakan kedua-dua lengan bawah untuk mengawal bola."},
+{q:"Apakah tujuan servis dalam bola tampar?",
+ o:["Menghentikan perlawanan","Menukar gelanggang","Mengukur ketinggian jaring","Memulakan permainan atau rali"],a:3,
+ h:"Servis digunakan untuk memulakan rali bola tampar."},
+{q:"Dalam badminton, apakah alat yang digunakan untuk memukul bulu tangkis?",
+ o:["Raket","Kayu hoki","Bet ping pong","Bat kriket"],a:0,
+ h:"Raket digunakan untuk memukul bulu tangkis."},
+{q:"Apakah tujuan pukulan lob dalam badminton?",
+ o:["Menghantar bulu tangkis rendah ke depan jaring","Menghantar bulu tangkis tinggi dan jauh ke belakang gelanggang lawan","Menghentikan permainan","Memukul bulu tangkis ke lantai sendiri"],a:1,
+ h:"Lob bertujuan menghantar bulu tangkis tinggi dan jauh."},
+{q:"Apakah sikap yang patut diamalkan ketika bermain bola tampar atau badminton?",
+ o:["Memarahi rakan apabila tersilap","Tidak mematuhi keputusan pengadil","Menghormati pihak lawan dan mematuhi peraturan","Sengaja mengganggu permainan"],a:2,
+ h:"Semangat kesukanan menekankan hormat, disiplin dan permainan bersih."},
+/* ARENA 4 */
+{q:"Dalam lari pecut, apakah tujuan permulaan yang baik?",
+ o:["Mengurangkan panjang trek","Mengelakkan penggunaan tenaga","Membolehkan atlet berhenti awal","Membantu atlet memecut dengan pantas selepas isyarat mula"],a:3,
+ h:"Teknik permulaan yang baik membantu pecutan awal."},
+{q:"Dalam acara lari berganti-ganti, apakah objek yang diserahkan antara pelari?",
+ o:["Baton","Raket","Bulu tangkis","Frisbee"],a:0,
+ h:"Baton diserahkan daripada seorang pelari kepada pelari seterusnya."},
+{q:"Apakah kemahiran utama dalam permainan frisbee?",
+ o:["Menendang dan menanduk","Melempar dan menangkap","Menggelecek dengan kaki","Memukul menggunakan bet"],a:1,
+ h:"Permainan frisbee melibatkan teknik melempar dan menangkap cakera."},
+{q:"Apakah maksud kelenturan?",
+ o:["Keupayaan berlari paling laju","Keupayaan melontar objek paling jauh","Keupayaan sendi bergerak melalui julat pergerakan","Keupayaan menahan nafas paling lama"],a:2,
+ h:"Kelenturan berkaitan julat pergerakan sendi."},
+{q:"Apakah tujuan ujian SEGAK?",
+ o:["Mengukur pencapaian akademik","Menentukan warna rumah sukan","Menguji kemahiran melukis","Menilai tahap kecergasan fizikal murid berdasarkan kesihatan"],a:3,
+ h:"SEGAK ialah pentaksiran kecergasan fizikal murid."},
+/* ARENA 5 */
+{q:"Apakah tindakan wajar apabila seseorang cuba menyentuh tubuh kita tanpa persetujuan?",
+ o:["Berkata tidak, menjauhkan diri dan mendapatkan bantuan orang dewasa dipercayai","Mendiamkan diri walaupun tidak selesa","Mengikut semua arahan orang tersebut","Menyembunyikan kejadian selama-lamanya"],a:0,
+ h:"Setiap individu berhak menjaga keselamatan dan batasan diri."},
+{q:"Apakah contoh komunikasi asertif?",
+ o:["Menjerit dan menghina rakan","Menyatakan pendapat dengan tegas tetapi sopan","Mendiamkan diri dalam semua keadaan","Memaksa semua orang bersetuju"],a:1,
+ h:"Komunikasi asertif menyampaikan kehendak dengan jelas sambil menghormati orang lain."},
+{q:"Apakah tindakan terbaik apabila melihat rakan dibuli?",
+ o:["Merakam dan menyebarkan video","Menyertai perbuatan membuli","Mendapatkan bantuan guru atau orang dewasa dipercayai","Mentertawakan mangsa"],a:2,
+ h:"Melaporkan kejadian kepada orang dewasa membantu melindungi mangsa."},
+{q:"Mengapakah pengambilan rokok dan vape perlu dielakkan?",
+ o:["Menjadikan semua orang lebih cergas","Menjamin kesihatan paru-paru","Meningkatkan prestasi sukan secara selamat","Boleh menyebabkan ketagihan dan menjejaskan kesihatan"],a:3,
+ h:"Produk nikotin boleh menyebabkan ketagihan dan memberi kesan buruk kepada kesihatan."},
+{q:"Apakah cara sihat mengurus tekanan emosi?",
+ o:["Berkongsi perasaan dengan orang dipercayai dan melakukan aktiviti sihat","Memendam semua masalah","Membuli rakan","Mengambil bahan terlarang"],a:0,
+ h:"Sokongan sosial dan aktiviti positif boleh membantu pengurusan emosi."},
+/* ARENA 6 */
+{q:"Apakah fungsi utama karbohidrat dalam badan?",
+ o:["Membina tulang secara langsung","Membekalkan tenaga","Menggantikan air","Menyebabkan semua penyakit"],a:1,
+ h:"Karbohidrat ialah sumber tenaga utama badan."},
+{q:"Nutrien manakah penting untuk pertumbuhan dan pembaikan tisu badan?",
+ o:["Air sahaja","Garam sahaja","Protein","Pewarna makanan"],a:2,
+ h:"Protein membantu pertumbuhan dan pembaikan tisu."},
+{q:"Mengapakah pengambilan makanan seimbang penting?",
+ o:["Supaya hanya satu jenis nutrien diambil","Supaya tidak perlu minum air","Supaya semua makanan diganti dengan gula","Supaya badan mendapat pelbagai nutrien yang diperlukan"],a:3,
+ h:"Pemakanan seimbang membekalkan nutrien untuk fungsi tubuh."},
+{q:"Apakah tindakan pertama yang sesuai apabila menemui mangsa kemalangan di kawasan berbahaya?",
+ o:["Memastikan keselamatan diri dan kawasan sebelum membantu","Terus mengangkat mangsa tanpa menilai keadaan","Memberikan makanan kepada mangsa","Mengambil gambar untuk dikongsi"],a:0,
+ h:"Keselamatan penyelamat dan kawasan perlu dinilai sebelum memberikan bantuan."},
+{q:"Apakah tindakan sesuai apabila seseorang tidak sedarkan diri dan tidak bernafas secara normal?",
+ o:["Memberi air minuman","Menghubungi 999, mendapatkan AED jika ada dan memulakan CPR mengikut latihan atau arahan operator","Membiarkan mangsa tanpa bantuan","Menggoncang mangsa dengan kuat berulang kali"],a:1,
+ h:"Bantuan kecemasan segera dan CPR yang betul boleh membantu mangsa henti jantung."}
+];
+
+var TOTAL = Q.length;          // 30
+var PER_ARENA = 5;
+var MAX_LIVES = 5;
+var TIME_LIMIT = 30;           // saat
+var POINTS = 100;
+
+/* ===== Utiliti ===== */
+function $(id){return document.getElementById(id);}
+function shuffle(arr){            // Fisher-Yates (salinan baharu)
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+function show(id){
+  var s=document.querySelectorAll(".screen");
+  for(var i=0;i<s.length;i++) s[i].classList.remove("active");
+  $(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+/* ===== Bunyi (Web Audio API) ===== */
+var AC=null, soundOn=true;
+function initAudio(){
+  if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ AC=null; } }
+  if(AC && AC.state==="suspended"){ AC.resume(); }
+}
+function tone(f,d,type,delay,vol){
+  if(!soundOn||!AC) return;
+  try{
+    var t=AC.currentTime+(delay||0), o=AC.createOscillator(), g=AC.createGain();
+    o.type=type||"sine"; o.frequency.value=f;
+    g.gain.setValueAtTime(vol||0.15,t);
+    g.gain.exponentialRampToValueAtTime(0.001,t+d);
+    o.connect(g); g.connect(AC.destination);
+    o.start(t); o.stop(t+d+0.03);
+  }catch(e){}
+}
+var sfx={
+  ok:function(){tone(523,.12,"triangle",0);tone(659,.12,"triangle",.1);tone(784,.25,"triangle",.2);},
+  no:function(){tone(220,.3,"sawtooth",0,.12);tone(150,.4,"sawtooth",.15,.12);},
+  tick:function(){tone(880,.05,"square",0,.05);},
+  win:function(){[523,659,784,1047,784,1047,1319].forEach(function(f,i){tone(f,.2,"triangle",i*.12);});},
+  over:function(){[392,330,262,196].forEach(function(f,i){tone(f,.35,"sawtooth",i*.25,.1);});},
+  click:function(){tone(660,.06,"square",0,.05);}
+};
+$("sndBtn").addEventListener("click",function(){
+  initAudio(); soundOn=!soundOn;
+  this.textContent = soundOn?"🔊":"🔇";
+  if(soundOn) sfx.click();
+});
+
+/* ===== Konfeti ===== */
+var cv=$("confetti"), cx=cv.getContext("2d"), parts=[], raf=null;
+function resize(){cv.width=window.innerWidth;cv.height=window.innerHeight;}
+window.addEventListener("resize",resize); resize();
+function burst(n){
+  var cols=["#ffd43b","#ff4d7d","#22d3ee","#22c55e","#ffffff","#a78bfa"];
+  for(var i=0;i<n;i++){
+    parts.push({x:Math.random()*cv.width,y:-10-Math.random()*cv.height*0.4,
+      vx:(Math.random()-.5)*4,vy:2+Math.random()*4,s:5+Math.random()*7,
+      r:Math.random()*6,vr:(Math.random()-.5)*.3,c:cols[Math.floor(Math.random()*cols.length)]});
+  }
+  if(!raf) loop();
+}
+function loop(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  for(var i=parts.length-1;i>=0;i--){
+    var p=parts[i]; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.vy+=0.04;
+    if(p.y>cv.height+20){parts.splice(i,1);continue;}
+    cx.save(); cx.translate(p.x,p.y); cx.rotate(p.r);
+    cx.fillStyle=p.c; cx.fillRect(-p.s/2,-p.s/3,p.s,p.s*0.6); cx.restore();
+  }
+  if(parts.length){ raf=requestAnimationFrame(loop); }
+  else { raf=null; cx.clearRect(0,0,cv.width,cv.height); }
+}
+
+/* ===== Penonton stadium ===== */
+(function(){
+  var g=$("crowd"), cols=["#ffd43b","#ff4d7d","#22d3ee","#ffffff","#a78bfa","#fb923c"], s="";
+  for(var r=0;r<5;r++){
+    for(var c=0;c<48;c++){
+      var x=6+c*8.1+(r%2)*4, y=50+r*8-Math.abs(x-200)*0.05+ (r*0);
+      if(y<36) continue;
+      s+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2.6" fill="'+cols[(c*7+r*3)%cols.length]+'"/>';
+    }
+  }
+  g.innerHTML=s;
+})();
+
+/* ===== Keadaan permainan ===== */
+var G={name:"",kelas:"",idx:0,score:0,lives:MAX_LIVES,correct:0,answered:0,
+       arenaCorrect:[0,0,0,0,0,0],opts:[],locked:true,tEnd:0,timerId:null,lastSec:30,over:false};
+
+function livesText(n){var s="";for(var i=0;i<MAX_LIVES;i++)s+=(i<n?"❤️":"🖤");return s;}
+
+function setRunner(p,animate){
+  var r=$("runner");
+  r.style.transition=animate?"transform .9s ease":"none";
+  r.style.transform="translate("+(20+p*300)+"px,0)";
+}
+function cheer(msg){
+  var c=$("cheer"); c.textContent=msg; c.classList.remove("show");
+  void c.offsetWidth; c.classList.add("show");
+}
+function updateHud(){
+  $("hQ").textContent=(G.idx+1)+"/"+TOTAL;
+  $("hScore").textContent=G.score;
+  $("hLives").textContent=livesText(G.lives);
+  $("progBar").style.width=((G.idx)/TOTAL*100)+"%";
+}
+
+function newGame(){
+  G.idx=0;G.score=0;G.lives=MAX_LIVES;G.correct=0;G.answered=0;
+  G.arenaCorrect=[0,0,0,0,0,0];G.over=false;
+  show("s-game");
+  loadQuestion();
+}
+
+function loadQuestion(){
+  var q=Q[G.idx], ar=Math.floor(G.idx/PER_ARENA), inAr=G.idx%PER_ARENA;
+  // Rawak susunan pilihan; jawapan betul ditandakan dengan bendera "c"
+  G.opts=shuffle(q.o.map(function(t,i){return {t:t,c:(i===q.a)};}));
+  G.locked=false;
+  updateHud();
+  $("arenaTxt").textContent=ARENAS[ar].i+" Arena "+(ar+1)+": "+ARENAS[ar].n;
+  $("qArena").textContent=ARENAS[ar].i+" Arena "+(ar+1)+" - "+ARENAS[ar].n;
+  $("qNo").textContent="Soalan "+(inAr+1)+"/"+PER_ARENA;
+  $("qText").textContent=(G.idx+1)+". "+q.q;
+  if(inAr===0){ setRunner(0,false); } else { setRunner(inAr/PER_ARENA,false); }
+  $("bob").className="";
+  $("crowd").classList.remove("cheer");
+
+  var box=$("opts"); box.innerHTML="";
+  var L=["A","B","C","D"];
+  G.opts.forEach(function(o,i){
+    var b=document.createElement("button");
+    b.type="button"; b.className="opt"; b.setAttribute("data-i",i);
+    var l=document.createElement("span"); l.className="ltr"; l.textContent=L[i];
+    var t=document.createElement("span"); t.textContent=o.t;
+    b.appendChild(l); b.appendChild(t);
+    b.addEventListener("click",function(){ answer(i); });
+    box.appendChild(b);
+  });
+  var fb=$("fb"); fb.className="fb";
+  startTimer();
+}
+
+function startTimer(){
+  stopTimer();
+  G.tEnd=Date.now()+TIME_LIMIT*1000; G.lastSec=TIME_LIMIT;
+  renderTimer(TIME_LIMIT*1000);
+  G.timerId=setInterval(function(){
+    var left=G.tEnd-Date.now();
+    if(left<=0){ stopTimer(); renderTimer(0); answer(-1); return; }
+    renderTimer(left);
+  },100);
+}
+function stopTimer(){ if(G.timerId){clearInterval(G.timerId);G.timerId=null;} }
+function renderTimer(ms){
+  var sec=Math.ceil(ms/1000), low=sec<=10;
+  $("timerBar").style.width=Math.max(0,ms/(TIME_LIMIT*1000)*100)+"%";
+  $("timerBox").className="timer"+(low?" low":"");
+  $("tNum").className="tnum"+(low?" low":"");
+  $("tNum").textContent=sec+" s";
+  if(sec!==G.lastSec){ G.lastSec=sec; if(sec<=5&&sec>0) sfx.tick(); }
+}
+
+function answer(i){
+  if(G.locked) return;
+  G.locked=true; stopTimer();
+  var q=Q[G.idx], ar=Math.floor(G.idx/PER_ARENA), inAr=G.idx%PER_ARENA;
+  var timeout=(i===-1), isRight=(!timeout && G.opts[i].c===true);
+  var correctText="";
+  var btns=$("opts").children;
+  for(var k=0;k<btns.length;k++){
+    btns[k].disabled=true;
+    if(G.opts[k].c){ btns[k].classList.add("correct"); correctText=G.opts[k].t; }
+    else if(k===i){ btns[k].classList.add("wrong"); }
+    else { btns[k].classList.add("dim"); }
+  }
+  G.answered++;
+  var fb=$("fb");
+  if(isRight){
+    G.score+=POINTS; G.correct++; G.arenaCorrect[ar]++;
+    fb.className="fb show ok";
+    $("fbTitle").textContent="✅ BETUL! +"+POINTS+" mata";
+    sfx.ok();
+    cheer(["Hebat!","Syabas!","Mantap!","Pecut terus!"][Math.floor(Math.random()*4)]);
+    $("bob").className="run"; $("crowd").classList.add("cheer");
+    setTimeout(function(){ $("bob").className=""; },1100);
+  } else {
+    G.lives--;
+    fb.className="fb show no";
+    $("fbTitle").textContent= timeout ? "⏰ MASA TAMAT! -1 nyawa" : "❌ SALAH! -1 nyawa";
+    sfx.no();
+    cheer(timeout?"Masa tamat!":"Jangan putus asa!");
+    $("bob").className="trip";
+  }
+  $("fbAns").textContent="Jawapan sebenar: "+correctText;
+  $("fbExp").textContent="Penerangan: "+q.h;
+  setRunner((inAr+1)/PER_ARENA,true);
+  updateHud();
+  $("hLives").textContent=livesText(G.lives);
+  $("nextBtn").textContent="TERUSKAN";
+  setTimeout(function(){ fb.scrollIntoView({behavior:"smooth",block:"nearest"}); },150);
+}
+
+function next(){
+  sfx.click();
+  if(G.lives<=0){ return showOver(); }
+  var inAr=G.idx%PER_ARENA;
+  if(inAr===PER_ARENA-1){
+    if(G.idx===TOTAL-1){ return showEnd(); }
+    return arenaDone();
+  }
+  G.idx++; loadQuestion();
+}
+
+function medalFor(n){ return n>=5?{e:"🥇",t:"Pingat Emas"}:(n>=3?{e:"🥈",t:"Pingat Perak"}:{e:"🥉",t:"Pingat Gangsa"}); }
+
+function arenaDone(){
+  var ar=Math.floor(G.idx/PER_ARENA), n=G.arenaCorrect[ar], m=medalFor(n);
+  $("ovMedal").textContent=m.e;
+  $("ovTitle").textContent="Arena "+(ar+1)+" selesai! "+m.t;
+  $("ovText").textContent=ARENAS[ar].n+": "+n+"/5 betul. Skor: "+G.score+" mata. Nyawa: "+G.lives+".";
+  $("ovBtn").textContent="ARENA SETERUSNYA";
+  $("arenaOv").classList.add("show");
+  $("ovBtn").focus();
+  sfx.win(); burst(140);
+}
+$("ovBtn").addEventListener("click",function(){
+  sfx.click();
+  $("arenaOv").classList.remove("show");
+  G.idx++; loadQuestion();
+});
+
+function pct(){ return Math.round(G.correct/TOTAL*100); }
+function rankFor(p){
+  if(p>=90) return {r:"Juara Piala Stadium",m:"🥇"};
+  if(p>=75) return {r:"Atlet Emas",m:"🥇"};
+  if(p>=60) return {r:"Atlet Perak",m:"🥈"};
+  if(p>=40) return {r:"Atlet Gangsa",m:"🥉"};
+  return {r:"Atlet Pelatih",m:"🏅"};
+}
+function statsHTML(el,items){
+  el.innerHTML="";
+  items.forEach(function(it){
+    var d=document.createElement("div"); if(it[2]) d.className="wide";
+    d.appendChild(document.createTextNode(it[0]));
+    var b=document.createElement("b"); b.textContent=it[1]; d.appendChild(b);
+    el.appendChild(d);
+  });
+}
+
+function showOver(){
+  G.over=true; stopTimer();
+  statsHTML($("overStats"),[
+    ["Nama",G.name,true],["Kelas",G.kelas],["Skor",G.score+" mata"],
+    ["Betul",G.correct+" / "+G.answered],["Peratus (30 soalan)",pct()+"%"]
+  ]);
+  $("copied2").textContent="";
+  show("s-over"); sfx.over();
+}
+function showEnd(){
+  stopTimer();
+  var p=pct(), rk=rankFor(p);
+  $("endMedal").textContent="🏆";
+  $("endRank").textContent=rk.m+" "+rk.r;
+  statsHTML($("endStats"),[
+    ["Nama",G.name,true],["Kelas",G.kelas],["Markah",G.score+" mata"],
+    ["Bilangan betul",G.correct+" / "+TOTAL],["Peratus",p+"%"],["Nyawa berbaki",G.lives+" / "+MAX_LIVES],
+    ["Pingat",rk.m+" "+rk.r.replace("Atlet ","").replace("Juara Piala Stadium","Piala Juara")],["Pangkat",rk.r]
+  ]);
+  $("copied").textContent="";
+  show("s-end"); sfx.win(); burst(220);
+  setTimeout(function(){burst(120);},900);
+}
+
+/* ===== Salin keputusan ===== */
+function resultText(){
+  var p=pct(), rk=rankFor(p), done=!G.over;
+  var d=new Date();
+  var tarikh=d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
+  var lines=[
+    "KEPUTUSAN PJPK CHAMPIONS - MISI JUARA SEKOLAH",
+    "Nama: "+G.name,
+    "Kelas: "+G.kelas,
+    "Status: "+(done?"Tamat semua 6 arena":"Game Over (sampai soalan "+(G.idx+1)+")"),
+    "Markah: "+G.score+" mata",
+    "Bilangan betul: "+G.correct+" / "+TOTAL,
+    "Peratus: "+p+"%",
+    "Pingat: "+(done?rk.m+" "+rk.r:"Tiada (Game Over)"),
+    "Pangkat: "+(done?rk.r:"Belum tamat"),
+    "Tarikh: "+tarikh
+  ];
+  return lines.join("\n");
+}
+function copyResult(msgEl){
+  var txt=resultText();
+  function ok(){ msgEl.textContent="✅ Keputusan disalin. Tampal dan hantar kepada guru."; }
+  function fallback(){
+    var ta=document.createElement("textarea");
+    ta.value=txt; ta.setAttribute("readonly",""); ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); ok(); }catch(e){ msgEl.textContent="Tidak dapat menyalin. Tangkap skrin keputusan ini."; }
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(ok,fallback);
+  } else { fallback(); }
+}
+$("copyBtn").addEventListener("click",function(){ sfx.click(); copyResult($("copied")); });
+$("copyBtn2").addEventListener("click",function(){ sfx.click(); copyResult($("copied2")); });
+
+/* ===== Butang & input ===== */
+$("startBtn").addEventListener("click",function(){
+  initAudio();
+  var n=$("nama").value.trim(), k=$("kelas").value.trim();
+  if(!n||!k){
+    $("startErr").textContent="Sila isi nama dan kelas dahulu.";
+    (!n?$("nama"):$("kelas")).focus(); return;
+  }
+  $("startErr").textContent="";
+  G.name=n; G.kelas=k; sfx.click(); newGame();
+});
+["nama","kelas"].forEach(function(id){
+  $(id).addEventListener("keydown",function(e){ if(e.key==="Enter") $("startBtn").click(); });
+});
+$("nextBtn").addEventListener("click",next);
+$("retryBtn").addEventListener("click",function(){ sfx.click(); newGame(); });
+$("againBtn").addEventListener("click",function(){ sfx.click(); newGame(); });
+
+/* Pintasan papan kekunci: A-D / 1-4 untuk jawab, Enter untuk teruskan */
+document.addEventListener("keydown",function(e){
+  if(!$("s-game").classList.contains("active")) return;
+  if($("arenaOv").classList.contains("show")) return;
+  var k=e.key.toLowerCase(), map={a:0,b:1,c:2,d:3,"1":0,"2":1,"3":2,"4":3};
+  if(!G.locked && map.hasOwnProperty(k)){ answer(map[k]); }
+});
+
+/* Jeda pemasa tidak diperlukan; pemasa guna cap masa supaya tepat walaupun tab ditukar */
+})();
+</script>
+</body>
+</html>
